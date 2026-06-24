@@ -9,11 +9,13 @@
       // Apply the saved/system theme before paint to avoid a flash.
       (function () {
         try {
-          var stored = localStorage.getItem('theme')
+          var mode = localStorage.getItem('theme') // 'light' | 'dark' | 'system'
+          var systemDark = window.matchMedia(
+            '(prefers-color-scheme: dark)',
+          ).matches
           var dark =
-            stored === 'dark' ||
-            (!stored &&
-              window.matchMedia('(prefers-color-scheme: dark)').matches)
+            mode === 'dark' ||
+            ((mode === 'system' || !mode) && systemDark)
           document.documentElement.classList.toggle('dark', dark)
         } catch (e) {}
       })()

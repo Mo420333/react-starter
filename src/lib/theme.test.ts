@@ -1,11 +1,11 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import {
-  getStoredTheme,
+  getStoredMode,
+  getInitialMode,
   getSystemTheme,
-  getInitialTheme,
+  resolveTheme,
   applyTheme,
-  storeTheme,
-  nextTheme,
+  storeMode,
   THEME_KEY,
 } from './theme'
 
@@ -27,40 +27,49 @@ function setSystemDark(matches: boolean) {
     }) as unknown as MediaQueryList) as typeof window.matchMedia
 }
 
-describe('getStoredTheme', () => {
-  it('returns the stored value when valid', () => {
-    localStorage.setItem(THEME_KEY, 'dark')
-    expect(getStoredTheme()).toBe('dark')
+describe('getStoredMode', () => {
+  it('returns each valid stored mode', () => {
+    for (const mode of ['light', 'dark', 'system'] as const) {
+      localStorage.setItem(THEME_KEY, mode)
+      expect(getStoredMode()).toBe(mode)
+    }
   })
   it('returns null when nothing is stored', () => {
-    expect(getStoredTheme()).toBeNull()
+    expect(getStoredMode()).toBeNull()
   })
   it('returns null for an invalid stored value', () => {
     localStorage.setItem(THEME_KEY, 'banana')
-    expect(getStoredTheme()).toBeNull()
+    expect(getStoredMode()).toBeNull()
+  })
+})
+
+describe('getInitialMode', () => {
+  it('defaults to "system" with no stored choice', () => {
+    expect(getInitialMode()).toBe('system')
+  })
+  it('uses the stored mode when present', () => {
+    localStorage.setItem(THEME_KEY, 'dark')
+    expect(getInitialMode()).toBe('dark')
   })
 })
 
 describe('getSystemTheme', () => {
-  it('returns dark when the OS prefers dark', () => {
+  it('reflects the OS preference', () => {
     setSystemDark(true)
     expect(getSystemTheme()).toBe('dark')
-  })
-  it('returns light when the OS prefers light', () => {
     setSystemDark(false)
     expect(getSystemTheme()).toBe('light')
   })
 })
 
-describe('getInitialTheme', () => {
-  it('prefers an explicit stored choice over the system value', () => {
-    setSystemDark(true)
-    localStorage.setItem(THEME_KEY, 'light')
-    expect(getInitialTheme()).toBe('light')
+describe('resolveTheme', () => {
+  it('returns the explicit mode directly', () => {
+    expect(resolveTheme('light', 'dark')).toBe('light')
+    expect(resolveTheme('dark', 'light')).toBe('dark')
   })
-  it('falls back to the system value with no stored choice', () => {
-    setSystemDark(true)
-    expect(getInitialTheme()).toBe('dark')
+  it('falls back to the system theme for "system"', () => {
+    expect(resolveTheme('system', 'dark')).toBe('dark')
+    expect(resolveTheme('system', 'light')).toBe('light')
   })
 })
 
@@ -75,16 +84,9 @@ describe('applyTheme', () => {
   })
 })
 
-describe('storeTheme', () => {
-  it('persists the chosen theme', () => {
-    storeTheme('dark')
-    expect(localStorage.getItem(THEME_KEY)).toBe('dark')
-  })
-})
-
-describe('nextTheme', () => {
-  it('toggles between light and dark', () => {
-    expect(nextTheme('light')).toBe('dark')
-    expect(nextTheme('dark')).toBe('light')
+describe('storeMode', () => {
+  it('persists the chosen mode', () => {
+    storeMode('system')
+    expect(localStorage.getItem(THEME_KEY)).toBe('system')
   })
 })

@@ -2,39 +2,38 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   applyTheme,
   DARK_QUERY,
-  getInitialTheme,
-  getStoredTheme,
-  nextTheme,
-  storeTheme,
+  getInitialMode,
+  getSystemTheme,
+  resolveTheme,
+  storeMode,
   type Theme,
+  type ThemeMode,
 } from '../lib/theme'
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme)
+  const [mode, setModeState] = useState<ThemeMode>(getInitialMode)
+  const [systemTheme, setSystemTheme] = useState<Theme>(getSystemTheme)
 
-  // Reflect the current theme onto the document.
+  const theme = resolveTheme(mode, systemTheme)
+
+  // Reflect the resolved theme onto the document.
   useEffect(() => {
     applyTheme(theme)
   }, [theme])
 
-  // Follow OS changes — but only while the user hasn't explicitly chosen.
+  // Track the OS preference so "system" mode stays in sync live.
   useEffect(() => {
     const mql = window.matchMedia(DARK_QUERY)
-    const onChange = (e: MediaQueryListEvent) => {
-      if (getStoredTheme() === null) setTheme(e.matches ? 'dark' : 'light')
-    }
+    const onChange = (e: MediaQueryListEvent) =>
+      setSystemTheme(e.matches ? 'dark' : 'light')
     mql.addEventListener('change', onChange)
     return () => mql.removeEventListener('change', onChange)
   }, [])
 
-  // An explicit toggle is a deliberate choice, so it gets persisted.
-  const toggle = useCallback(() => {
-    setTheme((t) => {
-      const next = nextTheme(t)
-      storeTheme(next)
-      return next
-    })
+  const setMode = useCallback((next: ThemeMode) => {
+    storeMode(next)
+    setModeState(next)
   }, [])
 
-  return { theme, toggle }
+  return { mode, theme, setMode }
 }

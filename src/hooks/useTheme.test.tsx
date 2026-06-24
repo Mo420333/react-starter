@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { act, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { useTheme } from './useTheme'
+import type { ThemeMode } from '../lib/theme'
 
 const originalMatchMedia = window.matchMedia
 
@@ -37,42 +37,64 @@ function installMatchMedia(initialDark: boolean) {
 }
 
 function Probe() {
-  const { theme, toggle } = useTheme()
+  const { mode, theme, setMode } = useTheme()
   return (
-    <button onClick={toggle} data-testid="t">
-      {theme}
-    </button>
+    <div>
+      <span data-testid="mode">{mode}</span>
+      <span data-testid="theme">{theme}</span>
+      {(['light', 'system', 'dark'] as ThemeMode[]).map((m) => (
+        <button key={m} onClick={() => setMode(m)}>
+          {m}
+        </button>
+      ))}
+    </div>
   )
 }
 
-const label = () => screen.getByTestId('t').textContent
+const mode = () => screen.getByTestId('mode').textContent
+const theme = () => screen.getByTestId('theme').textContent
+const choose = (m: ThemeMode) =>
+  act(() => screen.getByRole('button', { name: m }).click())
 
-describe('useTheme — OS reactivity', () => {
-  it('follows OS theme changes when the user has not chosen', () => {
+describe('useTheme — three-way mode', () => {
+  it('defaults to system mode and follows the OS', () => {
     const emit = installMatchMedia(false)
     render(<Probe />)
-    expect(label()).toBe('light')
+    expect(mode()).toBe('system')
+    expect(theme()).toBe('light')
 
     emit(true)
-    expect(label()).toBe('dark')
+    expect(theme()).toBe('dark')
     expect(document.documentElement).toHaveClass('dark')
-
-    emit(false)
-    expect(label()).toBe('light')
-    expect(document.documentElement).not.toHaveClass('dark')
   })
 
-  it('stops following the OS once the user explicitly toggles', async () => {
-    const user = userEvent.setup()
+  it('pins to an explicit mode and ignores the OS', () => {
     const emit = installMatchMedia(false)
     render(<Probe />)
 
-    await user.click(screen.getByTestId('t')) // explicit choice -> dark
-    expect(label()).toBe('dark')
+    choose('dark')
+    expect(mode()).toBe('dark')
+    expect(theme()).toBe('dark')
     expect(localStorage.getItem('theme')).toBe('dark')
 
-    emit(false) // OS says light, but the explicit choice wins
-    expect(label()).toBe('dark')
-    expect(document.documentElement).toHaveClass('dark')
+    emit(false) // OS prefers light, but "dark" is pinned
+    expect(theme()).toBe('dark')
+  })
+
+  it('returns to following the OS when switched back to system', () => {
+    const emit = installMatchMedia(false)
+    render(<Probe />)
+
+    choose('light')
+    emit(true) // ignored while pinned to light
+    expect(theme()).toBe('light')
+
+    choose('system')
+    expect(mode()).toBe('system')
+    expect(theme()).toBe('dark') // now follows the OS again
+    expect(localStorage.getItem('theme')).toBe('system')
+
+    emit(false)
+    expect(theme()).toBe('light')
   })
 })

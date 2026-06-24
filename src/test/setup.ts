@@ -32,7 +32,24 @@ Object.defineProperty(globalThis, 'localStorage', {
   value: storage,
 })
 
+// jsdom doesn't implement matchMedia; provide a minimal stub (defaults to
+// "no match", i.e. light system preference).
+if (!window.matchMedia) {
+  window.matchMedia = (query: string) =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }) as MediaQueryList
+}
+
 afterEach(() => {
   cleanup()
   localStorage.clear()
+  document.documentElement.classList.remove('dark')
 })

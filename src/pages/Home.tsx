@@ -9,20 +9,20 @@ export default function Home() {
         <h1 className="text-4xl font-bold tracking-tight">
           Your React app is ready
         </h1>
-        <p className="text-lg text-slate-600">
+        <p className="text-lg text-slate-600 dark:text-slate-400">
           A minimal starter with routing, Tailwind, and TypeScript wired up.
-          Edit <code className="rounded bg-slate-200 px-1.5 py-0.5 text-sm">src/pages/Home.tsx</code> and save to see hot reload.
+          Edit <code className="rounded bg-slate-200 px-1.5 py-0.5 text-sm dark:bg-slate-800">src/pages/Home.tsx</code> and save to see hot reload.
         </p>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="mb-4 text-sm font-medium text-slate-500">
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <p className="mb-4 text-sm font-medium text-slate-500 dark:text-slate-400">
           A tiny interactive demo
         </p>
         <button
           type="button"
           onClick={() => setCount((c) => c + 1)}
-          className="rounded-lg bg-slate-900 px-5 py-2.5 font-medium text-white transition-colors hover:bg-slate-700"
+          className="rounded-lg bg-slate-900 px-5 py-2.5 font-medium text-white transition-colors hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-300"
         >
           Count is {count}
         </button>
@@ -37,10 +37,10 @@ export default function Home() {
         ].map((f) => (
           <li
             key={f.title}
-            className="rounded-lg border border-slate-200 bg-white p-4"
+            className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
           >
             <h3 className="font-semibold">{f.title}</h3>
-            <p className="text-sm text-slate-600">{f.body}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{f.body}</p>
           </li>
         ))}
       </ul>

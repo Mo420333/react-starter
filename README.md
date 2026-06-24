@@ -4,6 +4,10 @@
 
 A minimal React starter built with Vite and TypeScript, styled with Tailwind CSS v4, with routing, a small Todos feature, and a full test suite with enforced coverage.
 
+| Light | Dark |
+| --- | --- |
+| ![Light mode](./docs/screenshot-light.png) | ![Dark mode](./docs/screenshot-dark.png) |
+
 ## Stack
 
 - **[Vite](https://vite.dev/)** + **React 19** + **TypeScript**

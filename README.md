@@ -70,3 +70,7 @@ open coverage/index.html   # browse the HTML report
 `.github/workflows/ci.yml` runs on every push to `main` and on pull requests:
 **lint → test (with coverage) → build**, and uploads the coverage report as a
 build artifact.
+
+## License
+
+[MIT](./LICENSE)
